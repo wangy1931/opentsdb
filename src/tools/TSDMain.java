@@ -18,6 +18,7 @@ import java.net.InetSocketAddress;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
+import net.opentsdb.tsd.SSLPipelineFactory;
 import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.socket.ServerSocketChannelFactory;
 import org.jboss.netty.channel.socket.nio.NioServerBossPool;
@@ -163,7 +164,11 @@ final class TSDMain {
       // here to fail fast.
       final RpcManager manager = RpcManager.instance(tsdb);
 
-      server.setPipelineFactory(new PipelineFactory(tsdb, manager));
+      if (config.getBoolean("tsd.http.usessl")) {
+        server.setPipelineFactory(new SSLPipelineFactory(tsdb, manager));
+      } else {
+        server.setPipelineFactory(new PipelineFactory(tsdb, manager));
+      }
       if (config.hasProperty("tsd.network.backlog")) {
         server.setOption("backlog", config.getInt("tsd.network.backlog")); 
       }

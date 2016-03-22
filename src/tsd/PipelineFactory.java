@@ -39,7 +39,7 @@ import net.opentsdb.core.TSDB;
  * Creates a newly configured {@link ChannelPipeline} for a new channel.
  * This class is supposed to be a singleton.
  */
-public final class PipelineFactory implements ChannelPipelineFactory {
+public class PipelineFactory implements ChannelPipelineFactory {
 
   // Those are entirely stateless and thus a single instance is needed.
   private static final StringEncoder ENCODER = new StringEncoder();
@@ -99,11 +99,14 @@ public final class PipelineFactory implements ChannelPipelineFactory {
 
   @Override
   public ChannelPipeline getPipeline() throws Exception {
-   final ChannelPipeline pipeline = pipeline();
+    final ChannelPipeline pipeline = pipeline();
+    addTSDBHandler(pipeline);
+    return pipeline;
+  }
 
+  protected void addTSDBHandler(ChannelPipeline pipeline) {
     pipeline.addLast("connmgr", connmgr);
     pipeline.addLast("detect", HTTP_OR_RPC);
-    return pipeline;
   }
 
   /**
