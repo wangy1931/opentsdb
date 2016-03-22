@@ -315,6 +315,15 @@
       </plugin>
 
     </plugins>
+
+    <extensions>
+      <extension>
+        <groupId>kr.motd.maven</groupId>
+        <artifactId>os-maven-plugin</artifactId>
+        <version>1.2.3.Final</version>
+      </extension>
+    </extensions>
+
   </build>
 
   <dependencies>
@@ -480,6 +489,14 @@
       <groupId>net.opentsdb</groupId>
       <artifactId>opentsdb_gwt_theme</artifactId>
       <version>@GWT_THEME_VERSION@</version>
+    </dependency>
+
+    <dependency>
+      <groupId>io.netty</groupId>
+      <artifactId>netty-tcnative</artifactId>
+      <version>1.1.30.Fork2</version>
+      <classifier>${os.detected.classifier}</classifier>
+      <optional>true</optional>
     </dependency>
 
   </dependencies>
