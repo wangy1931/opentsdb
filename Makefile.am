@@ -120,6 +120,7 @@ tsdb_SRC := \
 	src/tsd/LineBasedFrameDecoder.java	\
 	src/tsd/LogsRpc.java	\
 	src/tsd/PipelineFactory.java	\
+	src/tsd/SSLPipelineFactory.java	\
 	src/tsd/PutDataPointRpc.java	\
 	src/tsd/QueryRpc.java	\
 	src/tsd/RpcHandler.java	\
@@ -162,6 +163,7 @@ tsdb_DEPS = \
 	$(JACKSON_CORE)	\
 	$(JACKSON_DATABIND)	\
 	$(NETTY)	\
+	$(NETTY_TCNATIVE)	\
 	$(PROTOBUF)	\
 	$(SLF4J_API)	\
 	$(SUASYNC)	\
@@ -678,6 +680,7 @@ pom.xml: pom.xml.in Makefile
 	    -e 's/@LOGBACK_CORE_VERSION@/$(LOGBACK_CORE_VERSION)/' \
 	    -e 's/@MOCKITO_VERSION@/$(MOCKITO_VERSION)/' \
 	    -e 's/@NETTY_VERSION@/$(NETTY_VERSION)/' \
+	    -e 's/@NETTY_TCNATIVE_VERSION@/$(NETTY_TCNATIVE_VERSION)/' \
 	    -e 's/@OBJENESIS_VERSION@/$(OBJENESIS_VERSION)/' \
 	    -e 's/@POWERMOCK_MOCKITO_VERSION@/$(POWERMOCK_MOCKITO_VERSION)/' \
 	    -e 's/@SLF4J_API_VERSION@/$(SLF4J_API_VERSION)/' \
