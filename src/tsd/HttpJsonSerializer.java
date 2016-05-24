@@ -134,8 +134,11 @@ class HttpJsonSerializer extends HttpSerializer {
 
     // convert to a string so we can handle character encoding properly
     final String content = query.getContent().trim();
-    final int firstbyte = content.charAt(0);
+    //final int firstbyte = content.charAt(0);
     try {
+      IncomingDataPointToken dpToken = JSON.parseToObject(content, IncomingDataPointToken.class);
+      return Arrays.asList(dpToken.getMetrics());
+      /*
       if (firstbyte == '{') {
         final IncomingDataPoint dp = 
           JSON.parseToObject(content, IncomingDataPoint.class);
@@ -145,7 +148,7 @@ class HttpJsonSerializer extends HttpSerializer {
         return dps;
       } else {
         return JSON.parseToObject(content, TR_INCOMING);
-      }
+      }*/
     } catch (IllegalArgumentException iae) {
       throw new BadRequestException("Unable to parse the given JSON", iae);
     }
