@@ -49,6 +49,7 @@ tsdb_SRC := \
 	src/core/FillPolicy.java \
 	src/core/IncomingDataPoint.java	\
 	src/core/IncomingDataPoints.java	\
+  src/core/IncomingDataPointToken.java \
 	src/core/IllegalDataException.java	\
 	src/core/Internal.java	\
 	src/core/MutableDataPoint.java \
