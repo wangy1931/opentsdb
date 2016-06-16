@@ -15,6 +15,7 @@ package net.opentsdb.tsd;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -34,6 +35,7 @@ import com.stumbleupon.async.Deferred;
 
 import net.opentsdb.core.DataPoint;
 import net.opentsdb.core.DataPoints;
+import net.opentsdb.core.IncomingDataPointToken;
 import net.opentsdb.core.FillPolicy;
 import net.opentsdb.core.IncomingDataPoint;
 import net.opentsdb.core.QueryException;
