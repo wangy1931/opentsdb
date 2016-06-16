@@ -55,6 +55,10 @@ public class Config {
   /** Flag to determine if we're running under Windows or not */
   public static final boolean IS_WINDOWS = 
       System.getProperty("os.name", "").contains("Windows");
+
+  public static final String PROP_MYSQL_URL = "tsd.mysql.url";
+  public static final String PROP_MYSQL_USER = "tsd.mysql.user";
+  public static final String PROP_MYSQL_PASSWORD = "tsd.mysql.password";
   
   // These are accessed often so need a set address for fast access (faster
   // than accessing the map. Their value will be changed when the config is 
@@ -524,6 +528,9 @@ public class Config {
       + "X-Mx-ReqToken, Keep-Alive, X-Requested-With, If-Modified-Since");
     default_map.put("tsd.query.timeout", "0");
     default_map.put("tsd.http.usessl", "false");
+    default_map.put(PROP_MYSQL_URL, "jdbc:mysql://localhost:3306/grafana");
+    default_map.put(PROP_MYSQL_USER, "root");
+    default_map.put(PROP_MYSQL_PASSWORD, "password");
 
     for (Map.Entry<String, String> entry : default_map.entrySet()) {
       if (!properties.containsKey(entry.getKey()))

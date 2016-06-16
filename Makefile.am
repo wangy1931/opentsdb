@@ -62,6 +62,7 @@ tsdb_SRC := \
 	src/core/SeekableView.java	\
 	src/core/Span.java	\
 	src/core/SpanGroup.java	\
+	src/core/TokenOrgMap.java	\
 	src/core/TSDB.java	\
 	src/core/Tags.java	\
 	src/core/TsdbQuery.java	\
@@ -162,6 +163,7 @@ tsdb_DEPS = \
 	$(JACKSON_ANNOTATIONS)	\
 	$(JACKSON_CORE)	\
 	$(JACKSON_DATABIND)	\
+	$(MYSQL_CONNECTOR)	\
 	$(NETTY)	\
 	$(NETTY_TCNATIVE)	\
 	$(PROTOBUF)	\
@@ -679,6 +681,7 @@ pom.xml: pom.xml.in Makefile
 	    -e 's/@LOGBACK_CLASSIC_VERSION@/$(LOGBACK_CLASSIC_VERSION)/' \
 	    -e 's/@LOGBACK_CORE_VERSION@/$(LOGBACK_CORE_VERSION)/' \
 	    -e 's/@MOCKITO_VERSION@/$(MOCKITO_VERSION)/' \
+	    -e 's/@MYSQL_CONNECTOR_VERSION@/$(MYSQL_CONNECTOR_VERSION)/' \
 	    -e 's/@NETTY_VERSION@/$(NETTY_VERSION)/' \
 	    -e 's/@NETTY_TCNATIVE_VERSION@/$(NETTY_TCNATIVE_VERSION)/' \
 	    -e 's/@OBJENESIS_VERSION@/$(OBJENESIS_VERSION)/' \

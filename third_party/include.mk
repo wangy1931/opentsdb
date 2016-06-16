@@ -27,6 +27,7 @@ include third_party/javassist/include.mk
 include third_party/junit/include.mk
 include third_party/logback/include.mk
 include third_party/mockito/include.mk
+include third_party/mysql-connector/include.mk
 include third_party/netty/include.mk
 include third_party/netty-tcnative/include.mk
 include third_party/objenesis/include.mk

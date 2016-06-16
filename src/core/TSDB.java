@@ -15,6 +15,7 @@ package net.opentsdb.core;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.Charset;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -122,6 +123,9 @@ public final class TSDB {
   
   /** Plugin for dealing with data points that can't be stored */
   private StorageExceptionHandler storage_exception_handler = null;
+
+  /** token -> orgname mapping */
+  private final TokenOrgMap tokenOrgMap;
   
   /**
    * Constructor
@@ -129,7 +133,7 @@ public final class TSDB {
    * @param config An initialized configuration object
    * @since 2.1
    */
-  public TSDB(final HBaseClient client, final Config config) {
+  public TSDB(final HBaseClient client, final Config config) throws SQLException {
     this.config = config;
     if (client == null) {
       final org.hbase.async.Config async_config;
@@ -209,6 +213,8 @@ public final class TSDB {
       UniqueId.preloadUidCache(this, uid_cache_map);
     }
     LOG.debug(config.dumpConfiguration());
+
+    this.tokenOrgMap = new TokenOrgMap(config);
   }
   
   /**
@@ -216,7 +222,7 @@ public final class TSDB {
    * @param config An initialized configuration object
    * @since 2.0
    */
-  public TSDB(final Config config) {
+  public TSDB(final Config config) throws SQLException {
     this(null, config);
   }
   
