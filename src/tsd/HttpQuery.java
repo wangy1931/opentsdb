@@ -102,6 +102,7 @@ final class HttpQuery extends AbstractHttpQuery {
     this.show_stack_trace =
       tsdb.getConfig().getBoolean("tsd.http.show_stack_trace");
     this.serializer = new HttpJsonSerializer(this);
+    this.serializer.initialize(tsdb);
   }
 
   /**
@@ -317,6 +318,7 @@ final class HttpQuery extends AbstractHttpQuery {
       }
 
       this.serializer = ctor.newInstance(this);
+      this.serializer.initialize(this.tsdb);
       return;
     }
 
@@ -337,6 +339,7 @@ final class HttpQuery extends AbstractHttpQuery {
     }
 
     this.serializer = ctor.newInstance(this);
+    this.serializer.initialize(this.tsdb);
   }
 
   /**

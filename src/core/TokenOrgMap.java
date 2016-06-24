@@ -1,5 +1,7 @@
 package net.opentsdb.core;
 
+import com.google.common.base.Optional;
+import com.google.common.base.Strings;
 import com.mysql.jdbc.jdbc2.optional.MysqlConnectionPoolDataSource;
 import net.opentsdb.utils.Config;
 import org.slf4j.Logger;
@@ -29,6 +31,14 @@ public class TokenOrgMap {
         this.connectionPoolDataSource.setPassword(dbPassword);
         LOG.info("initialized db connection {}@{}", dbUser, dbUrl);
         load();
+    }
+
+    public Optional<String> getOrgNameForToken(String token) {
+        if (Strings.isNullOrEmpty(token)) {
+            return Optional.absent();
+        }
+        String orgName = this.tokenToOrg.get(token);
+        return Optional.fromNullable(orgName);
     }
 
     private void load() throws SQLException {

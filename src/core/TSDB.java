@@ -1286,6 +1286,8 @@ public final class TSDB {
   public Timer getTimer() {
     return timer;
   }
+
+  public TokenOrgMap getTokenOrgMap() { return this.tokenOrgMap; }
   
   // ------------------ //
   // Compaction helpers //

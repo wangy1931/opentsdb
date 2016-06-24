@@ -97,6 +97,8 @@ public final class TSQuery {
   
   /** The query status for tracking over all performance of this query */
   private QueryStats query_stats;
+
+  private String orgToken;
   
   /**
    * Default constructor necessary for POJO de/serialization
@@ -365,6 +367,8 @@ public final class TSQuery {
   public QueryStats getQueryStats() {
     return query_stats;
   }
+
+  public String getOrgToken() { return this.orgToken;  }
   
   /**
    * Sets the start time for further parsing. This can be an absolute or 
@@ -449,4 +453,6 @@ public final class TSQuery {
   public void setQueryStats(final QueryStats query_stats) {
     this.query_stats = query_stats;
   }
+
+  public void setOrgToken(final String token) { this.orgToken = token; }
 }

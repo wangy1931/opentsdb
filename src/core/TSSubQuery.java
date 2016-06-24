@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
+import com.google.common.base.Strings;
 import net.opentsdb.query.filter.TagVFilter;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -284,6 +285,18 @@ public final class TSSubQuery {
   /** @param metric the name of a metric to fetch */
   public void setMetric(String metric) {
     this.metric = metric;
+  }
+
+  public void prefixOrgName(String orgName) {
+    //need to be called after setMetric. Usually it is better to change setMetric, but does not want to
+    //change all the test methods => merge hell. setMetric is only called at one place so far, so the chance
+    //of misuse is not there. (of course this can change in the future)
+    if (!Strings.isNullOrEmpty(orgName)) {
+      if (Strings.isNullOrEmpty(this.metric)) {
+        throw new RuntimeException("metric has to be set first");
+      }
+      this.metric = String.format("%s.%s", orgName, this.metric);
+    }
   }
 
   /** @param tsuids a list of timeseries UIDs as hex encoded strings to fetch */

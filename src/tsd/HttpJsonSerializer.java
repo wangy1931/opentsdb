@@ -83,7 +83,8 @@ class HttpJsonSerializer extends HttpSerializer {
     new TypeReference<HashMap<String, Object>>() {};
   private static TypeReference<List<Annotation>> TR_ANNOTATIONS = 
       new TypeReference<List<Annotation>>() {};
-    
+
+  private TSDB tsdb;
   /**
    * Default constructor necessary for plugin implementation
    */
@@ -102,7 +103,7 @@ class HttpJsonSerializer extends HttpSerializer {
   /** Initializer, nothing to do for the JSON serializer */
   @Override
   public void initialize(final TSDB tsdb) {
-    // nothing to see here
+    this.tsdb = tsdb;
   }
   
   /** Nothing to do on shutdown */
@@ -139,6 +140,7 @@ class HttpJsonSerializer extends HttpSerializer {
     //final int firstbyte = content.charAt(0);
     try {
       IncomingDataPointToken dpToken = JSON.parseToObject(content, IncomingDataPointToken.class);
+      dpToken.initialize(this.tsdb);
       return Arrays.asList(dpToken.getMetrics());
       /*
       if (firstbyte == '{') {

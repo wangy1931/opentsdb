@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
+import com.google.common.base.Optional;
 import org.hbase.async.HBaseException;
 import org.hbase.async.RpcTimedOutException;
 import org.hbase.async.Bytes.ByteMap;
@@ -498,6 +499,13 @@ final class QueryRpc implements HttpRpc {
     if (query.hasQueryStringParam("show_summary")) {
         data_query.setShowSummary(true);
     }
+
+    if (query.hasQueryStringParam("token")) {
+      final Optional<String> orgNameOpt = tsdb.getTokenOrgMap().getOrgNameForToken(query.getQueryStringParam("token"));
+      if (orgNameOpt.isPresent()) {
+        data_query.setOrgToken(orgNameOpt.get());
+      }
+    }
     
     // handle tsuid queries first
     if (query.hasQueryStringParam("tsuid")) {
@@ -552,6 +560,7 @@ final class QueryRpc implements HttpRpc {
     i--; // Move to the last part (the metric name).
     List<TagVFilter> filters = new ArrayList<TagVFilter>();
     sub_query.setMetric(Tags.parseWithMetricAndFilters(parts[i], filters));
+    sub_query.prefixOrgName(data_query.getOrgToken());
     sub_query.setFilters(filters);
     
     // parse out the rate and downsampler 
