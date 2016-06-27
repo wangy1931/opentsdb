@@ -69,6 +69,7 @@ import net.opentsdb.stats.StatsCollector;
  * points or query the database.
  */
 public final class TSDB {
+  public final static String DEFAULT_ORG = "DefaultOrg";
   private static final Logger LOG = LoggerFactory.getLogger(TSDB.class);
   
   static final byte[] FAMILY = { 't' };

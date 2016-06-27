@@ -291,12 +291,14 @@ public final class TSSubQuery {
     //need to be called after setMetric. Usually it is better to change setMetric, but does not want to
     //change all the test methods => merge hell. setMetric is only called at one place so far, so the chance
     //of misuse is not there. (of course this can change in the future)
-    if (!Strings.isNullOrEmpty(orgName)) {
-      if (Strings.isNullOrEmpty(this.metric)) {
-        throw new RuntimeException("metric has to be set first");
-      }
-      this.metric = String.format("%s.%s", orgName, this.metric);
+    if (Strings.isNullOrEmpty(this.metric)) {
+      throw new RuntimeException("metric has to be set first");
     }
+    String orgNameToPrefix = orgName;
+    if (Strings.isNullOrEmpty(orgName)) {
+      orgNameToPrefix = TSDB.DEFAULT_ORG;
+    }
+    this.metric = String.format("%s.%s", orgNameToPrefix, this.metric);
   }
 
   /** @param tsuids a list of timeseries UIDs as hex encoded strings to fetch */
