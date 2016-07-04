@@ -50,7 +50,7 @@ public class TokenOrgMap {
         try {
             pcon = this.connectionPoolDataSource.getPooledConnection();
             con = pcon.getConnection();
-            stmt = con.prepareStatement("select a.key, o.name from org as o join api_key as a on o.id = a.org_id;");
+            stmt = con.prepareStatement("select a.token, o.name from org as o join api_key as a on o.id = a.org_id;");
             rs = stmt.executeQuery();
             while(rs.next()){
                 final String token = rs.getString("key");
