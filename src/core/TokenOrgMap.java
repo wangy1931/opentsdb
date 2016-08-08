@@ -23,7 +23,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 public class TokenOrgMap {
     private static final Logger LOG = LoggerFactory.getLogger(TokenOrgMap.class);
     private final MysqlConnectionPoolDataSource connectionPoolDataSource;
-    private final Map<String, String> tokenToOrg = new ConcurrentHashMap<String, String>();
+    private final Map<String, Long> tokenToOrg = new ConcurrentHashMap<String, Long>();
 
     public TokenOrgMap(Config config) throws SQLException{
         final String dbUrl = config.getString(Config.PROP_MYSQL_URL);
@@ -46,15 +46,14 @@ public class TokenOrgMap {
                 }
             }
         }, 0, 30000);
-        load();
     }
 
-    public Optional<String> getOrgNameForToken(String token) {
+    public Optional<Long> getOrgIdForToken(String token) {
         if (Strings.isNullOrEmpty(token)) {
             return Optional.absent();
         }
-        String orgName = this.tokenToOrg.get(token);
-        return Optional.fromNullable(orgName);
+        Long orgId = this.tokenToOrg.get(token);
+        return Optional.fromNullable(orgId);
     }
 
     private void load() throws SQLException {
@@ -66,14 +65,14 @@ public class TokenOrgMap {
         try {
             pcon = this.connectionPoolDataSource.getPooledConnection();
             con = pcon.getConnection();
-            stmt = con.prepareStatement("select a.key, o.name from org as o join api_key as a on o.id = a.org_id;");
+            stmt = con.prepareStatement("select a.key, o.id from org as o join api_key as a on o.id = a.org_id;");
             rs = stmt.executeQuery();
             this.tokenToOrg.clear();
             int count = 0;
             while(rs.next()){
                 final String token = rs.getString("key");
-                final String orgName = rs.getString("name");
-                this.tokenToOrg.put(token, orgName);
+                final Long orgId = rs.getLong("id");
+                this.tokenToOrg.put(token, orgId);
                 count++;
             }
             LOG.info("total {} token-org mappings are loaded", count);

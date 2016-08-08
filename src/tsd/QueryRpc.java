@@ -501,10 +501,8 @@ final class QueryRpc implements HttpRpc {
     }
 
     if (query.hasQueryStringParam("token")) {
-      final Optional<String> orgNameOpt = tsdb.getTokenOrgMap().getOrgNameForToken(query.getQueryStringParam("token"));
-      if (orgNameOpt.isPresent()) {
-        data_query.setOrgToken(orgNameOpt.get());
-      }
+      final Optional<Long> orgIdOpt = tsdb.getTokenOrgMap().getOrgIdForToken(query.getQueryStringParam("token"));
+      data_query.setOrgIdOptional(orgIdOpt);
     }
     
     // handle tsuid queries first
@@ -560,7 +558,7 @@ final class QueryRpc implements HttpRpc {
     i--; // Move to the last part (the metric name).
     List<TagVFilter> filters = new ArrayList<TagVFilter>();
     sub_query.setMetric(Tags.parseWithMetricAndFilters(parts[i], filters));
-    sub_query.prefixOrgName(data_query.getOrgToken());
+    sub_query.prefixOrg(data_query.getOrgIdOptional());
     sub_query.setFilters(filters);
     
     // parse out the rate and downsampler 

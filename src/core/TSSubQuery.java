@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
+import com.google.common.base.Optional;
 import com.google.common.base.Strings;
 import net.opentsdb.query.filter.TagVFilter;
 
@@ -287,18 +288,18 @@ public final class TSSubQuery {
     this.metric = metric;
   }
 
-  public void prefixOrgName(String orgName) {
+  public void prefixOrg(Optional<Long> orgIdOpt) {
     //need to be called after setMetric. Usually it is better to change setMetric, but does not want to
     //change all the test methods => merge hell. setMetric is only called at one place so far, so the chance
     //of misuse is not there. (of course this can change in the future)
     if (Strings.isNullOrEmpty(this.metric)) {
       throw new RuntimeException("metric has to be set first");
     }
-    String orgNameToPrefix = orgName;
-    if (Strings.isNullOrEmpty(orgName)) {
-      orgNameToPrefix = TSDB.DEFAULT_ORG;
+    Long orgId = TSDB.DEFAULT_ORG;
+    if (orgIdOpt.isPresent()) {
+      orgId = orgIdOpt.get();
     }
-    this.metric = String.format("%s.%s", orgNameToPrefix, this.metric);
+    this.metric = String.format("%d.%s", orgId, this.metric);
   }
 
   /** @param tsuids a list of timeseries UIDs as hex encoded strings to fetch */

@@ -20,6 +20,7 @@ import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.google.common.base.Objects;
+import com.google.common.base.Optional;
 import com.stumbleupon.async.Callback;
 import com.stumbleupon.async.Deferred;
 
@@ -98,7 +99,7 @@ public final class TSQuery {
   /** The query status for tracking over all performance of this query */
   private QueryStats query_stats;
 
-  private String orgToken;
+  private Optional<Long> orgIdOptional;
   
   /**
    * Default constructor necessary for POJO de/serialization
@@ -368,7 +369,7 @@ public final class TSQuery {
     return query_stats;
   }
 
-  public String getOrgToken() { return this.orgToken;  }
+  public Optional<Long> getOrgIdOptional() { return this.orgIdOptional;  }
   
   /**
    * Sets the start time for further parsing. This can be an absolute or 
@@ -454,5 +455,5 @@ public final class TSQuery {
     this.query_stats = query_stats;
   }
 
-  public void setOrgToken(final String token) { this.orgToken = token; }
+  public void setOrgIdOptional(final Optional<Long> id) { this.orgIdOptional = id; }
 }
