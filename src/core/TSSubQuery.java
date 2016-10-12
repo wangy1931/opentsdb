@@ -12,20 +12,14 @@
 // see <http://www.gnu.org/licenses/>.
 package net.opentsdb.core;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-
-import com.google.common.base.Optional;
-import com.google.common.base.Strings;
-import net.opentsdb.query.filter.TagVFilter;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.google.common.base.Objects;
+import com.google.common.base.Optional;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
+import net.opentsdb.query.filter.TagVFilter;
+
+import java.util.*;
 
 /**
  * Represents the parameters for an individual sub query on a metric or specific
@@ -288,18 +282,18 @@ public final class TSSubQuery {
     this.metric = metric;
   }
 
-  public void prefixOrg(Optional<Long> orgIdOpt) {
+  public void prefixOrg(Optional<Prefix> prefixOpt) {
     //need to be called after setMetric. Usually it is better to change setMetric, but does not want to
     //change all the test methods => merge hell. setMetric is only called at one place so far, so the chance
     //of misuse is not there. (of course this can change in the future)
     if (Strings.isNullOrEmpty(this.metric)) {
       throw new RuntimeException("metric has to be set first");
     }
-    Long orgId = TSDB.DEFAULT_ORG;
-    if (orgIdOpt.isPresent()) {
-      orgId = orgIdOpt.get();
+    Prefix sysIdAOrgId = new Prefix();
+    if (prefixOpt.isPresent()) {
+      sysIdAOrgId = prefixOpt.get();
     }
-    this.metric = String.format("%d.%s", orgId, this.metric);
+    this.metric = String.format("%s.%s", sysIdAOrgId.toString(), this.metric);
   }
 
   /** @param tsuids a list of timeseries UIDs as hex encoded strings to fetch */

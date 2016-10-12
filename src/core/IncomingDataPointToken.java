@@ -17,13 +17,13 @@ public class IncomingDataPointToken {
     }
 
     public void initialize(TSDB tsdb) {
-        Long orgId = TSDB.DEFAULT_ORG;
-        Optional<Long> orgIdOpt = tsdb.getTokenOrgMap().getOrgIdForToken(this.token);
-        if (orgIdOpt.isPresent()) {
-            orgId = orgIdOpt.get();
+        Prefix sysAOrgId = new Prefix();
+        Optional<Prefix> prefix = tsdb.getTokenOrgMap().getPrefixForToken(this.token);
+        if (prefix.isPresent()) {
+            sysAOrgId = prefix.get();
         }
         for (IncomingDataPoint metricPoint : this.metrics) {
-            metricPoint.setMetric(String.format("%d.%s", orgId, metricPoint.getMetric()));
+            metricPoint.setMetric(String.format("%s.%s", sysAOrgId.toString(), metricPoint.getMetric()));
         }
     }
 

@@ -4,7 +4,6 @@ import com.google.common.base.Optional;
 import com.google.common.base.Strings;
 import com.mysql.jdbc.jdbc2.optional.MysqlConnectionPoolDataSource;
 import net.opentsdb.utils.Config;
-import net.opentsdb.utils.Exceptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,17 +12,15 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class TokenOrgMap {
     private static final Logger LOG = LoggerFactory.getLogger(TokenOrgMap.class);
     private final MysqlConnectionPoolDataSource connectionPoolDataSource;
-    private final Map<String, Long> tokenToOrg = new ConcurrentHashMap<String, Long>();
+    private final Map<String, Prefix> tokenToOrg = new ConcurrentHashMap<String, Prefix>();
 
     public TokenOrgMap(Config config) throws SQLException{
         final String dbUrl = config.getString(Config.PROP_MYSQL_URL);
@@ -48,12 +45,12 @@ public class TokenOrgMap {
         }, 0, 30000);
     }
 
-    public Optional<Long> getOrgIdForToken(String token) {
+    public Optional<Prefix> getPrefixForToken(String token) {
         if (Strings.isNullOrEmpty(token)) {
             return Optional.absent();
         }
-        Long orgId = this.tokenToOrg.get(token);
-        return Optional.fromNullable(orgId);
+        Prefix prefix = this.tokenToOrg.get(token);
+        return Optional.fromNullable(prefix);
     }
 
     private void load() throws SQLException {
@@ -65,14 +62,15 @@ public class TokenOrgMap {
         try {
             pcon = this.connectionPoolDataSource.getPooledConnection();
             con = pcon.getConnection();
-            stmt = con.prepareStatement("select a.key, o.id from org as o join api_key as a on o.id = a.org_id;");
+            stmt = con.prepareStatement("select a.key, o.id, a.name from org as o join api_key as a on o.id = a.org_id;");
             rs = stmt.executeQuery();
             this.tokenToOrg.clear();
             int count = 0;
             while(rs.next()){
                 final String token = rs.getString("key");
                 final Long orgId = rs.getLong("id");
-                this.tokenToOrg.put(token, orgId);
+                final String systemId = rs.getString("name");
+                this.tokenToOrg.put(token, new Prefix(orgId, systemId));
                 count++;
             }
             LOG.info("total {} token-org mappings are loaded", count);
