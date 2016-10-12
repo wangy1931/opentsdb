@@ -12,20 +12,19 @@
 // see <http://www.gnu.org/licenses/>.
 package net.opentsdb.core;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.google.common.base.Objects;
 import com.google.common.base.Optional;
 import com.stumbleupon.async.Callback;
 import com.stumbleupon.async.Deferred;
-
 import net.opentsdb.stats.QueryStats;
 import net.opentsdb.utils.DateTime;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Parameters and state to query the underlying storage system for 
@@ -99,7 +98,7 @@ public final class TSQuery {
   /** The query status for tracking over all performance of this query */
   private QueryStats query_stats;
 
-  private Optional<Long> orgIdOptional;
+  private Optional<Prefix> prefixOptional;
   
   /**
    * Default constructor necessary for POJO de/serialization
@@ -369,7 +368,7 @@ public final class TSQuery {
     return query_stats;
   }
 
-  public Optional<Long> getOrgIdOptional() { return this.orgIdOptional;  }
+  public Optional<Prefix> getPrefixOptional() { return this.prefixOptional;  }
   
   /**
    * Sets the start time for further parsing. This can be an absolute or 
@@ -455,5 +454,5 @@ public final class TSQuery {
     this.query_stats = query_stats;
   }
 
-  public void setOrgIdOptional(final Optional<Long> id) { this.orgIdOptional = id; }
+  public void setPrefixOptional(final Optional<Prefix> id) { this.prefixOptional = id; }
 }

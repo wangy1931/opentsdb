@@ -70,6 +70,7 @@ import net.opentsdb.stats.StatsCollector;
  */
 public final class TSDB {
   public final static Long DEFAULT_ORG = 0L;
+  public final static String DEFAULT_SYSTEM = "0";
   private static final Logger LOG = LoggerFactory.getLogger(TSDB.class);
   
   static final byte[] FAMILY = { 't' };
