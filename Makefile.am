@@ -53,6 +53,7 @@ tsdb_SRC := \
 	src/core/IllegalDataException.java	\
 	src/core/Internal.java	\
 	src/core/MutableDataPoint.java \
+	src/core/Prefix.java	\
 	src/core/Query.java	\
 	src/core/QueryException.java	\
 	src/core/RateOptions.java  \
