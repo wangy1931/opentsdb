@@ -50,7 +50,10 @@ public final class TSQuery {
   
   /** User's timezone used for converting absolute human readable dates */
   private String timezone;
-  
+
+  /** Grafana query userd*/
+  private String token;
+
   /** Options for serializers, graphs, etc */
   private HashMap<String, ArrayList<String>> options;
   
@@ -106,7 +109,7 @@ public final class TSQuery {
   public TSQuery() {
     
   }
-  
+
   @Override
   public int hashCode() {
     // NOTE: Do not add any non-user submitted variables to the hash. We don't
@@ -302,6 +305,9 @@ public final class TSQuery {
     return end;
   }
 
+  /** @return the user given, for parse prefix */
+  public String getToken() { return token; }
+
   /** @return the user supplied timezone */
   public String getTimezone() {
     return timezone;
@@ -388,6 +394,9 @@ public final class TSQuery {
   public void setEnd(String end) {
     this.end = end;
   }
+
+  /** @param token set token for all queries. If not set ,can't return result*/
+  public void setToken(String token) { this.token = token; }
 
   /** @param timezone an optional timezone for date parsing */
   public void setTimezone(String timezone) {

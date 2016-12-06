@@ -214,7 +214,11 @@ class HttpJsonSerializer extends HttpSerializer {
           "Supply valid JSON formatted data in the body of your request");
     }
     try {
-      return JSON.parseToObject(json, TSQuery.class);
+      TSQuery tquies = JSON.parseToObject(json, TSQuery.class);
+      for(TSSubQuery squier : tquies.getQueries()){
+        squier.setMetric(tsdb.getPrefixMetrics(tquies.getToken(), squier.getMetric()));
+      }
+      return tquies;
     } catch (IllegalArgumentException iae) {
       throw new BadRequestException("Unable to parse the given JSON", iae);
     }

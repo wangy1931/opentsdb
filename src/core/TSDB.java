@@ -22,10 +22,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.google.common.base.Optional;
 import com.stumbleupon.async.Callback;
 import com.stumbleupon.async.Deferred;
 import com.stumbleupon.async.DeferredGroupException;
 
+import org.apache.http.impl.client.NoopUserTokenHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.hbase.async.AppendRequest;
@@ -1290,7 +1292,18 @@ public final class TSDB {
   }
 
   public TokenOrgMap getTokenOrgMap() { return this.tokenOrgMap; }
-  
+
+  public String getPrefixMetrics(String token, String metric) {
+    Prefix sysAOrgId;
+    Optional<Prefix> prefix = this.getTokenOrgMap().getPrefixForToken(token);
+    if (prefix.isPresent()) {
+      sysAOrgId = prefix.get();
+    } else {
+      LOG.error("Can not find this token in Database : "+ token);
+      throw new IllegalArgumentException("Can not find this token in Database : "+ token);
+    }
+    return String.format("%s.%s", sysAOrgId.toString(), metric);
+  }
   // ------------------ //
   // Compaction helpers //
   // ------------------ //

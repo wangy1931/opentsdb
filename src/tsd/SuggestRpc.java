@@ -12,15 +12,14 @@
 // see <http://www.gnu.org/licenses/>.
 package net.opentsdb.tsd;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-
+import net.opentsdb.core.TSDB;
+import net.opentsdb.utils.JSON;
 import org.jboss.netty.handler.codec.http.HttpMethod;
 import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 
-import net.opentsdb.core.TSDB;
-import net.opentsdb.utils.JSON;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  * Handles the suggest endpoint that returns X number of metrics, tagks or
@@ -48,8 +47,9 @@ final class SuggestRpc implements HttpRpc {
     }
     
     final String type;
-    final String q;
+    String q;
     final String max;
+    final String token;
     if (query.apiVersion() > 0 && query.method() == HttpMethod.POST) {
       final HashMap<String, String> map = query.serializer().parseSuggestV1();
       type = map.get("type");
@@ -57,10 +57,12 @@ final class SuggestRpc implements HttpRpc {
         throw new BadRequestException("Missing 'type' parameter");
       }
       q = map.get("q") == null ? "" : map.get("q");
+      q = tsdb.getPrefixMetrics(map.get("token"), q);
       max = map.get("max");
     } else { 
       type = query.getRequiredQueryStringParam("type");
       q = query.hasQueryStringParam("q") ? query.getQueryStringParam("q") : "";
+      q = tsdb.getPrefixMetrics(query.getRequiredQueryStringParam("token"), q);
       max = query.getQueryStringParam("max");
     }
     
