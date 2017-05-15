@@ -71,18 +71,55 @@ tsdb_SRC := \
 	src/core/TSQuery.java	\
 	src/core/TSSubQuery.java	\
 	src/core/WritableDataPoints.java	\
+	src/core/WriteableDataPointFilterPlugin.java	\
 	src/graph/Plot.java	\
 	src/meta/Annotation.java	\
+	src/meta/MetaDataCache.java	\
 	src/meta/TSMeta.java	\
 	src/meta/TSUIDQuery.java	\
 	src/meta/UIDMeta.java	\
 	src/query/QueryUtil.java	\
+	src/query/expression/Absolute.java	\
+	src/query/expression/Alias.java	\
+	src/query/expression/DiffSeries.java	\
+	src/query/expression/DivideSeries.java	\
+	src/query/expression/EDPtoDPS.java	\
+	src/query/expression/Expression.java	\
+	src/query/expression/ExpressionDataPoint.java	\
+	src/query/expression/ExpressionFactory.java	\
+	src/query/expression/ExpressionIterator.java	\
+	src/query/expression/ExpressionReader.java	\
+	src/query/expression/Expressions.java	\
+	src/query/expression/ExpressionTree.java	\
+	src/query/expression/HighestCurrent.java	\
+	src/query/expression/HighestMax.java	\
+	src/query/expression/IntersectionIterator.java	\
+	src/query/expression/ITimeSyncedIterator.java	\
+	src/query/expression/NumericFillPolicy.java	\
+	src/query/expression/MovingAverage.java	\
+	src/query/expression/MultiplySeries.java	\
+	src/query/expression/PostAggregatedDataPoints.java	\
+	src/query/expression/Scale.java	\
+	src/query/expression/SumSeries.java	\
+	src/query/expression/TimeShift.java \
+	src/query/expression/TimeSyncedIterator.java	\
+	src/query/expression/UnionIterator.java	\
+	src/query/expression/VariableIterator.java	\
 	src/query/filter/TagVFilter.java	\
 	src/query/filter/TagVLiteralOrFilter.java	\
 	src/query/filter/TagVNotKeyFilter.java	\
 	src/query/filter/TagVNotLiteralOrFilter.java	\
 	src/query/filter/TagVRegexFilter.java	\
 	src/query/filter/TagVWildcardFilter.java	\
+	src/query/pojo/Downsampler.java	\
+	src/query/pojo/Expression.java	\
+	src/query/pojo/Filter.java	\
+	src/query/pojo/Join.java	\
+	src/query/pojo/Metric.java	\
+	src/query/pojo/Output.java	\
+	src/query/pojo/Query.java	\
+	src/query/pojo/Timespan.java	\
+	src/query/pojo/Validatable.java	\
 	src/search/SearchPlugin.java	\
 	src/search/SearchQuery.java	\
 	src/search/TimeSeriesLookup.java	\
@@ -99,6 +136,7 @@ tsdb_SRC := \
 	src/tools/MetaPurge.java	\
 	src/tools/MetaSync.java	\
 	src/tools/Search.java	\
+	src/tools/StartupPlugin.java \
 	src/tools/TSDMain.java	\
 	src/tools/TextImporter.java	\
 	src/tools/TreeSync.java	\
@@ -112,6 +150,7 @@ tsdb_SRC := \
 	src/tsd/AnnotationRpc.java	\
 	src/tsd/BadRequestException.java	\
 	src/tsd/ConnectionManager.java	\
+	src/tsd/DropCachesRpc.java \
 	src/tsd/GnuplotException.java	\
 	src/tsd/GraphHandler.java	\
 	src/tsd/HttpJsonSerializer.java	\
@@ -125,10 +164,12 @@ tsdb_SRC := \
 	src/tsd/PipelineFactory.java	\
 	src/tsd/SSLPipelineFactory.java	\
 	src/tsd/PutDataPointRpc.java	\
+	src/tsd/QueryExecutor.java	\
 	src/tsd/QueryRpc.java	\
 	src/tsd/RpcHandler.java	\
 	src/tsd/RpcPlugin.java	\
 	src/tsd/RpcManager.java	\
+	src/tsd/RpcUtil.java \
 	src/tsd/RTPublisher.java	\
 	src/tsd/SearchRpc.java	\
 	src/tsd/StaticFileRpc.java	\
@@ -144,8 +185,10 @@ tsdb_SRC := \
 	src/uid/NoSuchUniqueName.java	\
 	src/uid/RandomUniqueId.java	\
 	src/uid/UniqueId.java	\
+	src/uid/UniqueIdFilterPlugin.java \
 	src/uid/UniqueIdInterface.java \
 	src/utils/ByteArrayPair.java \
+	src/utils/ByteSet.java \
 	src/utils/Config.java \
 	src/utils/DateTime.java \
 	src/utils/Exceptions.java \
@@ -157,7 +200,7 @@ tsdb_SRC := \
 	src/utils/Threads.java
 
 tsdb_DEPS = \
-	$(ASYNCHBASE)	\
+	$(COMMONS_LOGGING)	\
 	$(GUAVA)	\
 	$(LOG4J_OVER_SLF4J)	\
 	$(LOGBACK_CLASSIC)	\
@@ -165,14 +208,39 @@ tsdb_DEPS = \
 	$(JACKSON_ANNOTATIONS)	\
 	$(JACKSON_CORE)	\
 	$(JACKSON_DATABIND)	\
+	$(JAVACC)	\
+	$(JEXL)	\
+	$(JGRAPHT)	\
 	$(MYSQL_CONNECTOR)	\
 	$(NETTY)	\
-	$(NETTY_TCNATIVE)	\
-	$(PROTOBUF)	\
 	$(SLF4J_API)	\
 	$(SUASYNC)	\
-	$(ZOOKEEPER) \
 	$(APACHE_MATH)
+
+if BIGTABLE
+tsdb_DEPS += \
+	$(ALPN_BOOT)	\
+	$(ASYNCBIGTABLE)
+maven_profile_bigtable := true
+maven_profile_hbase := false
+maven_profile_cassandra := false
+else
+if CASSANDRA
+tsdb_DEPS += \
+	$(ASYNCCASSANDRA)
+maven_profile_bigtable := false
+maven_profile_hbase := false
+maven_profile_cassandra := true
+else
+tsdb_DEPS += \
+	$(ASYNCHBASE) \
+	$(PROTOBUF) \
+	$(ZOOKEEPER)
+maven_profile_bigtable := false
+maven_profile_hbase := true
+maven_profile_cassandra := false
+endif
+endif
 
 test_SRC := \
 	test/core/SeekableViewsForTest.java \
@@ -196,6 +264,7 @@ test_SRC := \
 	test/core/TestSpanGroup.java	\
 	test/core/TestTags.java	\
 	test/core/TestTSDB.java	\
+	test/core/TestTSDBAddPoint.java	\
 	test/core/TestTsdbQueryDownsample.java	\
 	test/core/TestTsdbQueryDownsampleSalted.java	\
 	test/core/TestTsdbQuery.java	\
@@ -212,12 +281,41 @@ test_SRC := \
 	test/meta/TestTSMeta.java	\
 	test/meta/TestTSUIDQuery.java	\
 	test/meta/TestUIDMeta.java	\
+	test/query/expression/BaseTimeSyncedIteratorTest.java	\
+	test/query/expression/TestAbsolute.java	\
+	test/query/expression/TestAlias.java	\
+	test/query/expression/TestDiffSeries.java	\
+	test/query/expression/TestDivideSeries.java	\
+	test/query/expression/TestExpressionFactory.java	\
+	test/query/expression/TestExpressionIterator.java	\
+	test/query/expression/TestExpressionReader.java	\
+	test/query/expression/TestExpressions.java	\
+	test/query/expression/TestExpressionTree.java	\
+	test/query/expression/TestHighestCurrent.java	\
+	test/query/expression/TestHighestMax.java	\
+	test/query/expression/TestIntersectionIterator.java	\
+	test/query/expression/TestNumericFillPolicy.java	\
+	test/query/expression/TestMovingAverage.java	\
+	test/query/expression/TestMultiplySeries.java	\
+	test/query/expression/TestPostAggregatedDataPoints.java	\
+	test/query/expression/TestScale.java	\
+	test/query/expression/TestSumSeries.java	\
+	test/query/expression/TestTimeSyncedIterator.java	\
+	test/query/expression/TestUnionIterator.java	\
 	test/query/filter/TestTagVFilter.java	\
 	test/query/filter/TestTagVLiteralOrFilter.java	\
 	test/query/filter/TestTagVNotKeyFilter.java	\
 	test/query/filter/TestTagVNotLiteralOrFilter.java	\
 	test/query/filter/TestTagVRegexFilter.java	\
 	test/query/filter/TestTagVWildcardFilter.java	\
+	test/query/pojo/TestDownsampler.java	\
+	test/query/pojo/TestExpression.java	\
+	test/query/pojo/TestFilter.java	\
+	test/query/pojo/TestJoin.java	\
+	test/query/pojo/TestMetric.java	\
+	test/query/pojo/TestOutput.java	\
+	test/query/pojo/TestQuery.java	\
+	test/query/pojo/TestTimeSpan.java	\
 	test/search/TestSearchPlugin.java	\
 	test/search/TestSearchQuery.java	\
 	test/search/TestTimeSeriesLookup.java	\
@@ -243,6 +341,7 @@ test_SRC := \
 	test/tsd/TestHttpQuery.java	\
 	test/tsd/TestHttpRpcPluginQuery.java	\
 	test/tsd/TestPutRpc.java	\
+	test/tsd/TestQueryExecutor.java	\
 	test/tsd/TestQueryRpc.java	\
 	test/tsd/TestQueryRpcLastDataPoint.java	\
 	test/tsd/TestRpcHandler.java	\
@@ -258,6 +357,7 @@ test_SRC := \
 	test/uid/TestRandomUniqueId.java	\
 	test/uid/TestUniqueId.java \
 	test/utils/TestByteArrayPair.java \
+	test/utils/TestByteSet.java \
 	test/utils/TestConfig.java \
 	test/utils/TestDateTime.java \
 	test/utils/TestExceptions.java \
@@ -292,11 +392,11 @@ test_DEPS = \
 	$(tsdb_DEPS) \
 	$(JAVASSIST)	\
 	$(JUNIT)	\
-        $(HAMCREST)	\
+	$(HAMCREST)	\
 	$(MOCKITO)	\
-        $(OBJENESIS)	\
+	$(OBJENESIS)	\
 	$(POWERMOCK_MOCKITO)	\
-        $(jar)
+	$(jar)
 
 httpui_SRC := \
 	src/tsd/client/DateTimeBox.java	\
@@ -310,12 +410,18 @@ httpui_SRC := \
 
 httpui_DEPS = src/tsd/QueryUi.gwt.xml
 
+# TODO(CL) - There is likely a MUCH better way to compile and add the expression sources and jars.
+expr_grammar = $(srcdir)/src/parser.jj
+expr_package = net/opentsdb/query/expression/parser
+expr_src_dir = $(builddir)/src/$(expr_package)
+get_expr_classes = `classes=''; for f in $(packagedir)$(expr_package)/*.class; do classes="$$classes $$f"; done; echo $$classes;`
+
 #dist_pkgdata_DATA = src/logback.xml
 dist_static_DATA = \
 	src/tsd/static/favicon.ico	\
 	src/tsd/static/opentsdb_header.jpg
 
-EXTRA_DIST = tsdb.in $(tsdb_SRC) $(test_SRC) \
+EXTRA_DIST = tsdb.in $(tsdb_SRC) $(test_SRC) $(expr_grammar) \
         $(test_plugin_SRC) $(test_plugin_MF) $(test_plugin_SVCS:%=test/%) \
         $(THIRD_PARTY) $(THIRD_PARTY:=.md5) \
         $(httpui_SRC) $(httpui_DEPS) \
@@ -385,6 +491,9 @@ filter_src = \
      src="$$src $$i";; \
    esac; \
  done; \
+ for f in $(expr_src_dir)/*.java; do \
+   src="$$src $$f"; \
+ done; \
  test -n "$$src" || exit 0
 # Touches all the targets if any of the dependencies are newer.
 # This is useful to force-recompile all files if one of the
@@ -401,7 +510,7 @@ $(tsdb_SRC): $(tsdb_DEPS)
 
 find_jar = test -f "$$jar" && echo "$$jar" || echo "$(srcdir)/$$jar"
 get_dep_classpath = `for jar in $(tsdb_DEPS); do $(find_jar); done | tr '\n' ':'`
-.javac-stamp: $(tsdb_SRC) $(builddata_SRC)
+.javac-stamp: $(tsdb_SRC) $(builddata_SRC) runjavacc
 	@$(filter_src); cp=$(get_dep_classpath); \
           echo "$(JAVA_COMPILE) -cp $$cp $$src"; \
                 $(JAVA_COMPILE) -cp $$cp $$src
@@ -617,8 +726,8 @@ manifest: .javac-stamp .git/HEAD
           echo "Implementation-Version: $(git_version)"; \
           echo "Implementation-Vendor: $(spec_vendor)"; } >"$@"
 
-$(jar): manifest .javac-stamp $(classes)
-	$(JAR) cfm `basename $(jar)` manifest $(classes_with_nested_classes) \
+$(jar): manifest .javac-stamp
+	$(JAR) cfm `basename $(jar)` manifest $(classes_with_nested_classes) $(get_expr_classes) \
          || { rv=$$? && rm -f `basename $(jar)` && exit $$rv; }
 #                       ^^^^^^^^^^^^^^^^^^^^^^^
 # I've seen cases where `jar' exits with an error but leaves a partially built .jar file!
@@ -641,6 +750,9 @@ $(JAVADOC_DIR)/index.html: $(tsdb_SRC)
 	$(JAVADOC) -d $(JAVADOC_DIR) -classpath $(get_dep_classpath) \
           -link $(JDK_JAVADOC) -link $(NETTY_JAVADOC) -link $(SUASYNC_JAVADOC) \
           $? $(builddata_SRC)
+
+runjavacc:
+	$(JAVA) -cp $(JAVACC) javacc -OUTPUT_DIRECTORY:$(expr_src_dir) $(expr_grammar); echo PWD: `pwd`;
 
 dist-hook:
 	$(mkdir_p) $(distdir)/.git
@@ -672,6 +784,8 @@ pom.xml: pom.xml.in Makefile
 	  echo '<!-- Generated by Makefile on '`date`' -->'; \
 	  sed <$< \
 	    -e 's/@ASYNCHBASE_VERSION@/$(ASYNCHBASE_VERSION)/' \
+	    -e 's/@ASYNCBIGTABLE_VERSION@/$(ASYNCBIGTABLE_VERSION)/' \
+	    -e 's/@ASYNCCASSANDRA_VERSION@/$(ASYNCCASSANDRA_VERSION)/' \
 	    -e 's/@GUAVA_VERSION@/$(GUAVA_VERSION)/' \
 	    -e 's/@GWT_VERSION@/$(GWT_VERSION)/' \
 	    -e 's/@GWT_THEME_VERSION@/$(GWT_THEME_VERSION)/' \
@@ -685,16 +799,20 @@ pom.xml: pom.xml.in Makefile
 	    -e 's/@MOCKITO_VERSION@/$(MOCKITO_VERSION)/' \
 	    -e 's/@MYSQL_CONNECTOR_VERSION@/$(MYSQL_CONNECTOR_VERSION)/' \
 	    -e 's/@NETTY_VERSION@/$(NETTY_VERSION)/' \
-	    -e 's/@NETTY_TCNATIVE_VERSION@/$(NETTY_TCNATIVE_VERSION)/' \
 	    -e 's/@OBJENESIS_VERSION@/$(OBJENESIS_VERSION)/' \
 	    -e 's/@POWERMOCK_MOCKITO_VERSION@/$(POWERMOCK_MOCKITO_VERSION)/' \
 	    -e 's/@SLF4J_API_VERSION@/$(SLF4J_API_VERSION)/' \
 	    -e 's/@SUASYNC_VERSION@/$(SUASYNC_VERSION)/' \
 	    -e 's/@ZOOKEEPER_VERSION@/$(ZOOKEEPER_VERSION)/' \
 	    -e 's/@APACHE_MATH_VERSION@/$(APACHE_MATH_VERSION)/' \
+	    -e 's/@JEXL_VERSION@/$(JEXL_VERSION)/' \
+	    -e 's/@JGRAPHT_VERSION@/$(JGRAPHT_VERSION)/' \
 	    -e 's/@spec_title@/$(spec_title)/' \
 	    -e 's/@spec_vendor@/$(spec_vendor)/' \
 	    -e 's/@spec_version@/$(PACKAGE_VERSION)/' \
+	    -e 's/@maven_profile_hbase@/$(maven_profile_hbase)/' \
+	    -e 's/@maven_profile_bigtable@/$(maven_profile_bigtable)/' \
+	    -e 's/@maven_profile_cassandrae@/$(maven_profile_cassandra)/' \
 	    ; \
 	} >$@-t
 	mv $@-t ../$@
@@ -747,9 +865,9 @@ debian: dist staticroot
 	cp -r staticroot/favicon.ico $(distdir)/debian/usr/share/opentsdb/static
 	cp -r staticroot/opentsdb_header.jpg $(distdir)/debian/usr/share/opentsdb/static
 	cp -r gwt/queryui/* $(distdir)/debian/usr/share/opentsdb/static
-	`for dep_jar in $(tsdb_DEPS); do cp ../$$dep_jar \
+	`for dep_jar in $(tsdb_DEPS); do cp $$dep_jar \
 	     $(distdir)/debian/usr/share/opentsdb/lib; done;`
-	cp $(top_srcdir)/tools/* $(distdir)/debian/usr/share/opentsdb/tools
+	cp -r $(top_srcdir)/tools/* $(distdir)/debian/usr/share/opentsdb/tools
 	dpkg -b $(distdir)/debian $(distdir)/opentsdb-$(PACKAGE_VERSION)_all.deb
 
 .PHONY: jar doc check gwtc gwtdev printdeps staticroot gwttsd rpm
