@@ -12,37 +12,11 @@
 // see <http://www.gnu.org/licenses/>.
 package net.opentsdb.tsd;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicLong;
-
-import org.hbase.async.HBaseException;
-import org.hbase.async.RpcTimedOutException;
-import org.hbase.async.Bytes.ByteMap;
-import org.jboss.netty.buffer.ChannelBuffer;
-import org.jboss.netty.handler.codec.http.HttpMethod;
-import org.jboss.netty.handler.codec.http.HttpResponseStatus;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import com.google.common.base.Optional;
 import com.stumbleupon.async.Callback;
 import com.stumbleupon.async.Deferred;
 import com.stumbleupon.async.DeferredGroupException;
-
-import net.opentsdb.core.DataPoints;
-import net.opentsdb.core.IncomingDataPoint;
-import net.opentsdb.core.Query;
-import net.opentsdb.core.QueryException;
-import net.opentsdb.core.RateOptions;
-import net.opentsdb.core.TSDB;
-import net.opentsdb.core.TSQuery;
-import net.opentsdb.core.TSSubQuery;
-import net.opentsdb.core.Tags;
+import net.opentsdb.core.*;
 import net.opentsdb.meta.Annotation;
 import net.opentsdb.meta.TSUIDQuery;
 import net.opentsdb.query.expression.ExpressionTree;
@@ -54,9 +28,18 @@ import net.opentsdb.uid.NoSuchUniqueName;
 import net.opentsdb.uid.UniqueId;
 import net.opentsdb.utils.DateTime;
 import net.opentsdb.utils.JSON;
+import org.hbase.async.Bytes.ByteMap;
+import org.hbase.async.HBaseException;
+import org.hbase.async.RpcTimedOutException;
+import org.jboss.netty.buffer.ChannelBuffer;
+import org.jboss.netty.handler.codec.http.HttpMethod;
+import org.jboss.netty.handler.codec.http.HttpResponseStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import net.opentsdb.core.Prefix;
-import com.google.common.base.Optional;
+import java.io.IOException;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicLong;
 /**
  * Handles queries for timeseries datapoints. Each request is parsed into a
  * TSQuery object, the values given validated, and if all tests pass, the
