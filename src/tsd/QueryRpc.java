@@ -55,6 +55,8 @@ import net.opentsdb.uid.UniqueId;
 import net.opentsdb.utils.DateTime;
 import net.opentsdb.utils.JSON;
 
+import net.opentsdb.core.Prefix;
+import com.google.common.base.Optional;
 /**
  * Handles queries for timeseries datapoints. Each request is parsed into a
  * TSQuery object, the values given validated, and if all tests pass, the
