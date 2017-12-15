@@ -2,6 +2,7 @@ package net.opentsdb.core;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Strings;
+import org.apache.commons.codec.binary.Base64;
 import com.mysql.jdbc.jdbc2.optional.MysqlConnectionPoolDataSource;
 import net.opentsdb.utils.Config;
 import org.slf4j.Logger;
@@ -16,6 +17,7 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
+import org.apache.commons.codec.binary.Base64;
 
 public class TokenOrgMap {
     private static final Logger LOG = LoggerFactory.getLogger(TokenOrgMap.class);
@@ -25,8 +27,13 @@ public class TokenOrgMap {
     public TokenOrgMap(Config config) throws SQLException{
         final String dbUrl = config.getString(Config.PROP_MYSQL_URL);
         final String dbUser = config.getString(Config.PROP_MYSQL_USER);
-        final String dbPassword = config.getString(Config.PROP_MYSQL_PASSWORD);
-
+        String dbPassword = config.getString(Config.PROP_MYSQL_PASSWORD);
+        try{
+            byte[] decodeBase64 = Base64.decodeBase64(dbPassword.getBytes("UTF-8"));
+            dbPassword =  new String(decodeBase64);
+        } catch(UnsupportedEncodingException e){
+            e.printStackTrace();
+        }
         this.connectionPoolDataSource = new MysqlConnectionPoolDataSource();
         this.connectionPoolDataSource.setUrl(dbUrl);
         this.connectionPoolDataSource.setUser(dbUser);
