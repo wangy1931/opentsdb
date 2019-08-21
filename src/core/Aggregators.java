@@ -96,7 +96,8 @@ public final class Aggregators {
    * counts will be off when counting multiple time series. Only use this when
    * downsampling until we support NaNs.
    * @since 2.2 */
-  public static final Aggregator COUNT = new Count(Interpolation.ZIM, "count");
+  public static final Aggregator COUNT = new Count(Interpolation.LERP, "count");
+  public static final Aggregator ZIMCOUNT = new Count(Interpolation.ZIM, "zimcount");
 
   /** Aggregator that returns the first data point. */
   public static final Aggregator FIRST = new First(Interpolation.ZIM, "first");
@@ -180,6 +181,7 @@ public final class Aggregators {
     aggregators.put("mult", MULTIPLY);
     aggregators.put("dev", DEV);
     aggregators.put("count", COUNT);
+    aggregators.put("zimcount", ZIMCOUNT);
     aggregators.put("zimsum", ZIMSUM);
     aggregators.put("zimmin", ZIMMIN);
     aggregators.put("zimmax", ZIMMAX);
