@@ -26,7 +26,7 @@ import net.opentsdb.core.Aggregators.Interpolation;
 public abstract class Aggregator {
   
   /** Interpolation method this aggregator uses across time series */
-  private final Interpolation interpolation_method;
+  protected final Interpolation interpolation_method;
   
   /** String name of the aggregator */
   private final String name;

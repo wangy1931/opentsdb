@@ -134,6 +134,15 @@ public class AggregationIterator implements SeekableView, DataPoint,
   /** Aggregator to use to aggregate data points from different Spans. */
   private final Aggregator aggregator;
 
+  /**
+   * Yi Lin: The original value is 0. But it does not help if we want to get rid of interpolation completely.
+   * For example, with 2 time series, one gives 0 as zim, the other gives 2, avg will be 1 (=2/2).
+   * We actually want it to be 2 (=2/1). So we need to treat zim specially. The only way to know if a value is zim
+   * is by keeping a special reserved value.
+   */
+  public final static long ZIM_LONG = Long.MIN_VALUE + 11;
+  public final static double ZIM_DOUBLE = Double.MIN_VALUE + 11;
+
   /** Interpolation method to use when aggregating time series */
   private final Interpolation method;
 
@@ -645,7 +654,7 @@ public class AggregationIterator implements SeekableView, DataPoint,
           //          + " -> " + y1 + " @ " + x1 + " => " + r);
           break;
         case ZIM:
-          r = 0;
+          r = ZIM_LONG;
           break;
         case MAX:
           r = Long.MAX_VALUE;
@@ -710,7 +719,7 @@ public class AggregationIterator implements SeekableView, DataPoint,
         //          + " -> " + y1 + " @ " + x1 + " => " + r);
         break;
       case ZIM:
-        r = 0;
+        r = ZIM_DOUBLE;
         break;
       case MAX:
         r = Double.MAX_VALUE;
