@@ -72,6 +72,15 @@ public final class Aggregators {
   public static final Aggregator ZIMSUM = new Sum(
       Interpolation.ZIM, "zimsum");
 
+  public static final Aggregator ZIMMIN = new Min(
+      Interpolation.ZIM, "zimmin");
+
+  public static final Aggregator ZIMMAX = new Max(
+      Interpolation.ZIM, "zimmax");
+
+  public static final Aggregator ZIMAVG = new Avg(
+      Interpolation.ZIM, "zimavg");
+
   /** Returns the minimum data point, causing SpanGroup to set <type>.MaxValue
    * if timestamps don't line up instead of interpolating. */
   public static final Aggregator MIMMIN = new Min(
@@ -110,6 +119,18 @@ public final class Aggregators {
   public static final PercentileAgg p75 = new PercentileAgg(75d, "p75");
   /** Aggregator that returns 50th percentile. */
   public static final PercentileAgg p50 = new PercentileAgg(50d, "p50");
+
+  public static final PercentileAgg ZIMp999 = new PercentileAgg(99.9d, "zimp999", Interpolation.ZIM);
+  /** Aggregator that returns 99th percentile. */
+  public static final PercentileAgg ZIMp99 = new PercentileAgg(99d, "zimp99", Interpolation.ZIM);
+  /** Aggregator that returns 95th percentile. */
+  public static final PercentileAgg ZIMp95 = new PercentileAgg(95d, "zimp95", Interpolation.ZIM);
+  /** Aggregator that returns 99th percentile. */
+  public static final PercentileAgg ZIMp90 = new PercentileAgg(90d, "zimp90", Interpolation.ZIM);
+  /** Aggregator that returns 75th percentile. */
+  public static final PercentileAgg ZIMp75 = new PercentileAgg(75d, "zimp75", Interpolation.ZIM);
+  /** Aggregator that returns 50th percentile. */
+  public static final PercentileAgg ZIMp50 = new PercentileAgg(50d, "zimp50", Interpolation.ZIM);
 
   /** Aggregator that returns estimated 99.9th percentile. */
   public static final PercentileAgg ep999r3 = 
@@ -160,13 +181,17 @@ public final class Aggregators {
     aggregators.put("dev", DEV);
     aggregators.put("count", COUNT);
     aggregators.put("zimsum", ZIMSUM);
+    aggregators.put("zimmin", ZIMMIN);
+    aggregators.put("zimmax", ZIMMAX);
+    aggregators.put("zimavg", ZIMAVG);
     aggregators.put("mimmin", MIMMIN);
     aggregators.put("mimmax", MIMMAX);
     aggregators.put("first", FIRST);
     aggregators.put("last", LAST);
 
     PercentileAgg[] percentiles = {
-       p999, p99, p95, p90, p75, p50, 
+       p999, p99, p95, p90, p75, p50,
+        ZIMp999, ZIMp99, ZIMp95, ZIMp90, ZIMp75, ZIMp50,
        ep999r3, ep99r3, ep95r3, ep90r3, ep75r3, ep50r3,
        ep999r7, ep99r7, ep95r7, ep90r7, ep75r7, ep50r7
     };
@@ -210,7 +235,16 @@ public final class Aggregators {
     public long runLong(final Longs values) {
       long result = values.nextLongValue();
       while (values.hasNextValue()) {
-        result += values.nextLongValue();
+        long currVal = values.nextLongValue();
+        /**
+         * Yi Lin: The original implementation does not help if we want to get rid of interpolation completely.
+         * For example, with 2 time series, one gives 0 as zim, the other gives 2, avg will be 1 (=2/2).
+         * We actually want it to be 2 (=2/1). So we need to treat zim specially. The only way to know if a value is zim
+         * is by keeping a special reserved value.
+         */
+        if (this.interpolation_method != Interpolation.ZIM || currVal != AggregationIterator.ZIM_LONG) {
+          result += currVal;
+        }
       }
       return result;
     }
@@ -223,8 +257,16 @@ public final class Aggregators {
       while (values.hasNextValue()) {
         final double val = values.nextDoubleValue();
         if (!Double.isNaN(val)) {
-          result += val;
-          ++n;
+          /**
+           * Yi Lin: The original implementation does not help if we want to get rid of interpolation completely.
+           * For example, with 2 time series, one gives 0 as zim, the other gives 2, avg will be 1 (=2/2).
+           * We actually want it to be 2 (=2/1). So we need to treat zim specially. The only way to know if a value is zim
+           * is by keeping a special reserved value.
+           */
+          if (this.interpolation_method != Interpolation.ZIM || val != AggregationIterator.ZIM_DOUBLE) {
+            result += val;
+            ++n;
+          }
         }
       }
 
@@ -243,8 +285,16 @@ public final class Aggregators {
       long min = values.nextLongValue();
       while (values.hasNextValue()) {
         final long val = values.nextLongValue();
-        if (val < min) {
-          min = val;
+        /**
+         * Yi Lin: The original implementation does not help if we want to get rid of interpolation completely.
+         * For example, with 2 time series, one gives 0 as zim, the other gives 2, avg will be 1 (=2/2).
+         * We actually want it to be 2 (=2/1). So we need to treat zim specially. The only way to know if a value is zim
+         * is by keeping a special reserved value.
+         */
+        if (this.interpolation_method != Interpolation.ZIM || val != AggregationIterator.ZIM_LONG) {
+          if (val < min) {
+            min = val;
+          }
         }
       }
       return min;
@@ -257,7 +307,7 @@ public final class Aggregators {
 
       while (values.hasNextValue()) {
         final double val = values.nextDoubleValue();
-        if (!Double.isNaN(val) && val < min) {
+        if (!Double.isNaN(val) && val < min && (this.interpolation_method != Interpolation.ZIM || val != AggregationIterator.ZIM_DOUBLE)) {
           min = val;
         }
       }
@@ -277,8 +327,16 @@ public final class Aggregators {
       long max = values.nextLongValue();
       while (values.hasNextValue()) {
         final long val = values.nextLongValue();
-        if (val > max) {
-          max = val;
+        /**
+         * Yi Lin: The original implementation does not help if we want to get rid of interpolation completely.
+         * For example, with 2 time series, one gives 0 as zim, the other gives 2, avg will be 1 (=2/2).
+         * We actually want it to be 2 (=2/1). So we need to treat zim specially. The only way to know if a value is zim
+         * is by keeping a special reserved value.
+         */
+        if (this.interpolation_method != Interpolation.ZIM || val != AggregationIterator.ZIM_LONG) {
+          if (val > max) {
+            max = val;
+          }
         }
       }
       return max;
@@ -291,7 +349,7 @@ public final class Aggregators {
 
       while (values.hasNextValue()) {
         final double val = values.nextDoubleValue();
-        if (!Double.isNaN(val) && val > max) {
+        if (!Double.isNaN(val) && val > max && (this.interpolation_method != Interpolation.ZIM || val != AggregationIterator.ZIM_DOUBLE)) {
           max = val;
         }
       }
@@ -311,8 +369,17 @@ public final class Aggregators {
       long result = values.nextLongValue();
       int n = 1;
       while (values.hasNextValue()) {
-        result += values.nextLongValue();
-        n++;
+        long currVal = values.nextLongValue();
+        /**
+         * Yi Lin: The original implementation does not help if we want to get rid of interpolation completely.
+         * For example, with 2 time series, one gives 0 as zim, the other gives 2, avg will be 1 (=2/2).
+         * We actually want it to be 2 (=2/1). So we need to treat zim specially. The only way to know if a value is zim
+         * is by keeping a special reserved value.
+         */
+        if (this.interpolation_method != Interpolation.ZIM || currVal != AggregationIterator.ZIM_LONG) {
+          result += currVal;
+          n++;
+        }
       }
       return result / n;
     }
@@ -324,8 +391,16 @@ public final class Aggregators {
       while (values.hasNextValue()) {
         final double val = values.nextDoubleValue();
         if (!Double.isNaN(val)) {
-          result += val;
-          n++;
+          /**
+           * Yi Lin: The original implementation does not help if we want to get rid of interpolation completely.
+           * For example, with 2 time series, one gives 0 as zim, the other gives 2, avg will be 1 (=2/2).
+           * We actually want it to be 2 (=2/1). So we need to treat zim specially. The only way to know if a value is zim
+           * is by keeping a special reserved value.
+           */
+          if (this.interpolation_method != Interpolation.ZIM || val != AggregationIterator.ZIM_DOUBLE) {
+            result += val;
+            n++;
+          }
         }
       }
       return (0 == n) ? Double.NaN : result / n;
@@ -482,8 +557,16 @@ public final class Aggregators {
     public long runLong(Longs values) {
       long result = 0;
       while (values.hasNextValue()) {
-        values.nextLongValue();
-        result++;
+        long currVal = values.nextLongValue();
+        /**
+         * Yi Lin: The original implementation does not help if we want to get rid of interpolation completely.
+         * For example, with 2 time series, one gives 0 as zim, the other gives 2, avg will be 1 (=2/2).
+         * We actually want it to be 2 (=2/1). So we need to treat zim specially. The only way to know if a value is zim
+         * is by keeping a special reserved value.
+         */
+        if (this.interpolation_method != Interpolation.ZIM || currVal != AggregationIterator.ZIM_LONG) {
+          result++;
+        }
       }
       return result;
     }
@@ -494,7 +577,15 @@ public final class Aggregators {
       while (values.hasNextValue()) {
         final double val = values.nextDoubleValue();
         if (!Double.isNaN(val)) {
-          result++;
+          /**
+           * Yi Lin: The original implementation does not help if we want to get rid of interpolation completely.
+           * For example, with 2 time series, one gives 0 as zim, the other gives 2, avg will be 1 (=2/2).
+           * We actually want it to be 2 (=2/1). So we need to treat zim specially. The only way to know if a value is zim
+           * is by keeping a special reserved value.
+           */
+          if (this.interpolation_method != Interpolation.ZIM || val != AggregationIterator.ZIM_DOUBLE) {
+            result++;
+          }
         }
       }
       return result;
@@ -515,12 +606,20 @@ public final class Aggregators {
     private final EstimationType estimation;
 
     public PercentileAgg(final Double percentile, final String name) {
-        this(percentile, name, null);
+        this(percentile, name, Aggregators.Interpolation.LERP, null);
     }
 
-    public PercentileAgg(final Double percentile, final String name, 
-        final EstimationType est) {
-      super(Aggregators.Interpolation.LERP, name);
+    public PercentileAgg(final Double percentile, final String name, final Aggregators.Interpolation interpolation) {
+      this(percentile, name, interpolation, null);
+    }
+
+    public PercentileAgg(final Double percentile, final String name, final EstimationType est) {
+      this(percentile, name, Aggregators.Interpolation.LERP, est);
+    }
+
+    public PercentileAgg(final Double percentile, final String name, final Aggregators.Interpolation interpolation,
+                         final EstimationType est) {
+      super(interpolation, name);
       Preconditions.checkArgument(percentile > 0 && percentile <= 100, 
           "Invalid percentile value");
       this.percentile = percentile;
@@ -535,7 +634,16 @@ public final class Aggregators {
             : new Percentile(this.percentile).withEstimationType(estimation);
       final ResizableDoubleArray local_values = new ResizableDoubleArray();
       while(values.hasNextValue()) {
-        local_values.addElement(values.nextLongValue());
+        long currVal = values.nextLongValue();
+        /**
+         * Yi Lin: The original implementation does not help if we want to get rid of interpolation completely.
+         * For example, with 2 time series, one gives 0 as zim, the other gives 2, avg will be 1 (=2/2).
+         * We actually want it to be 2 (=2/1). So we need to treat zim specially. The only way to know if a value is zim
+         * is by keeping a special reserved value.
+         */
+        if (this.interpolation_method != Interpolation.ZIM || currVal != AggregationIterator.ZIM_LONG) {
+          local_values.addElement(currVal);
+        }
       }
       percentile.setData(local_values.getElements());
       return (long) percentile.evaluate();
@@ -549,8 +657,16 @@ public final class Aggregators {
       while(values.hasNextValue()) {
         final double val = values.nextDoubleValue();
         if (!Double.isNaN(val)) {
-          local_values.addElement(val);
-          n++;
+          /**
+           * Yi Lin: The original implementation does not help if we want to get rid of interpolation completely.
+           * For example, with 2 time series, one gives 0 as zim, the other gives 2, avg will be 1 (=2/2).
+           * We actually want it to be 2 (=2/1). So we need to treat zim specially. The only way to know if a value is zim
+           * is by keeping a special reserved value.
+           */
+          if (this.interpolation_method != Interpolation.ZIM || val != AggregationIterator.ZIM_DOUBLE) {
+            local_values.addElement(val);
+            n++;
+          }
         }
       }
       if (n > 0) {
