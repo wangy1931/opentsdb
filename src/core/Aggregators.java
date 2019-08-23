@@ -285,6 +285,10 @@ public final class Aggregators {
     @Override
     public long runLong(final Longs values) {
       long min = values.nextLongValue();
+      if (this.interpolation_method == Interpolation.ZIM && min == net.opentsdb.core.AggregationIterator.ZIM_LONG) {
+        min = Long.MAX_VALUE;
+      }
+
       while (values.hasNextValue()) {
         final long val = values.nextLongValue();
         /**
@@ -305,7 +309,7 @@ public final class Aggregators {
     @Override
     public double runDouble(final Doubles values) {
       final double initial = values.nextDoubleValue();
-      double min = Double.isNaN(initial) ? Double.POSITIVE_INFINITY : initial;
+      double min = Double.isNaN(initial) || (this.interpolation_method == Interpolation.ZIM && initial == AggregationIterator.ZIM_DOUBLE) ? Double.POSITIVE_INFINITY : initial;
 
       while (values.hasNextValue()) {
         final double val = values.nextDoubleValue();
@@ -327,6 +331,10 @@ public final class Aggregators {
     @Override
     public long runLong(final Longs values) {
       long max = values.nextLongValue();
+      if (this.interpolation_method == Interpolation.ZIM && max == net.opentsdb.core.AggregationIterator.ZIM_LONG) {
+        max = Long.MIN_VALUE;
+      }
+
       while (values.hasNextValue()) {
         final long val = values.nextLongValue();
         /**
@@ -347,7 +355,7 @@ public final class Aggregators {
     @Override
     public double runDouble(final Doubles values) {
       final double initial = values.nextDoubleValue();
-      double max = Double.isNaN(initial) ? Double.NEGATIVE_INFINITY : initial;
+      double max = Double.isNaN(initial) || (this.interpolation_method == Interpolation.ZIM && initial == AggregationIterator.ZIM_DOUBLE) ? Double.NEGATIVE_INFINITY : initial;
 
       while (values.hasNextValue()) {
         final double val = values.nextDoubleValue();
