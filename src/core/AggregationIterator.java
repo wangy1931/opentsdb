@@ -141,7 +141,10 @@ public class AggregationIterator implements SeekableView, DataPoint,
    * is by keeping a special reserved value.
    */
   public final static long ZIM_LONG = Long.MIN_VALUE + 11;
-  public final static double ZIM_DOUBLE = Double.MIN_VALUE + 11;
+  /**
+   * Yi Lin: Double.MIN_VALUE + 11 will be 11. So don't add 11.
+   */
+  public final static double ZIM_DOUBLE = Double.MIN_VALUE;
 
   /** Interpolation method to use when aggregating time series */
   private final Interpolation method;
