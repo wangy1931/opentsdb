@@ -218,7 +218,6 @@ tsdb_DEPS = \
 	$(JGRAPHT)	\
 	$(MYSQL_CONNECTOR)	\
 	$(NETTY)	\
-	$(NETTY_ALL)	\
 	$(SLF4J_API)	\
 	$(SUASYNC)	\
 	$(APACHE_MATH)  \
