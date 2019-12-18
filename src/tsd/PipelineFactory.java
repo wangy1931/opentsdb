@@ -14,6 +14,8 @@ package net.opentsdb.tsd;
 
 import static org.jboss.netty.channel.Channels.pipeline;
 
+import org.jboss.netty.handler.ssl.SslHandler;
+
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandler;
@@ -31,6 +33,9 @@ import org.jboss.netty.handler.timeout.IdleStateHandler;
 import org.jboss.netty.util.Timer;
 
 import net.opentsdb.core.TSDB;
+
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLEngine;
 
 /**
  * Creates a newly configured {@link ChannelPipeline} for a new channel.
@@ -60,7 +65,10 @@ public class PipelineFactory implements ChannelPipelineFactory {
   
   /** The server side socket timeout. **/
   private final int socketTimeout;
-  
+
+  /** Null means ssl disabled **/
+  private final SSLContext sslContext;
+
   /**
    * Constructor that initializes the RPC router and loads HTTP formatter 
    * plugins. This constructor creates its own {@link RpcManager}.
@@ -71,7 +79,7 @@ public class PipelineFactory implements ChannelPipelineFactory {
    */
   public PipelineFactory(final TSDB tsdb) {
     this(tsdb, RpcManager.instance(tsdb), 
-        tsdb.getConfig().getInt("tsd.core.connections.limit"));
+        tsdb.getConfig().getInt("tsd.core.connections.limit"), null);
   }
 
   /**
@@ -84,7 +92,7 @@ public class PipelineFactory implements ChannelPipelineFactory {
    */
   public PipelineFactory(final TSDB tsdb, final RpcManager manager) {
     this(tsdb, RpcManager.instance(tsdb), 
-        tsdb.getConfig().getInt("tsd.core.connections.limit"));
+        tsdb.getConfig().getInt("tsd.core.connections.limit"), null);
   }
   
   /**
@@ -99,8 +107,9 @@ public class PipelineFactory implements ChannelPipelineFactory {
    * @since 2.3
    */
   public PipelineFactory(final TSDB tsdb, final RpcManager manager, 
-      final int connections_limit) {
+      final int connections_limit, final SSLContext sslContext) {
     this.tsdb = tsdb;
+    this.sslContext = sslContext;
     socketTimeout = tsdb.getConfig().getInt("tsd.core.socket.timeout");
     timer = tsdb.getTimer();
     timeoutHandler = new IdleStateHandler(timer, 0, 0, socketTimeout);
@@ -123,6 +132,22 @@ public class PipelineFactory implements ChannelPipelineFactory {
   }
 
   protected void addTSDBHandler(ChannelPipeline pipeline) {
+    if (this.sslContext != null) {
+      SSLEngine sslEngine = this.sslContext.createSSLEngine();
+      sslEngine.setUseClientMode(false);
+      sslEngine.setEnabledCipherSuites(new String[] {
+          "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384",
+          "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
+          "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256",
+          "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
+          "TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384",
+          "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384",
+          "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256",
+          "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256"
+      });
+      pipeline.addLast("sslHandler", new SslHandler(sslEngine));
+    }
+
     pipeline.addLast("connmgr", connmgr);
     pipeline.addLast("detect", HTTP_OR_RPC);
   }

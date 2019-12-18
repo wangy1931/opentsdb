@@ -38,6 +38,9 @@ include third_party/slf4j/include.mk
 include third_party/suasync/include.mk
 include third_party/validation-api/include.mk
 include third_party/apache/include.mk
+include third_party/apache_commons_codec/include.mk
+include third_party/ssl/include.mk
+include third_party/security/include.mk
 
 if BIGTABLE
 include third_party/alpn-boot/include.mk
