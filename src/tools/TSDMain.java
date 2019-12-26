@@ -41,6 +41,9 @@ import net.opentsdb.utils.FileSystem;
 import net.opentsdb.utils.Pair;
 import net.opentsdb.utils.PluginLoader;
 import net.opentsdb.utils.Threads;
+import utils.ssl.SslUtils;
+
+import javax.net.ssl.SSLContext;
 
 /**
  * Main class of the TSD, the Time Series Daemon.
@@ -65,7 +68,14 @@ final class TSDMain {
           Pair<Class<?>, Constructor<? extends StartupPlugin>>>();
 
   private static final short DEFAULT_FLUSH_INTERVAL = 1000;
-  
+
+  public static final String TSDB_CLIENT_SSL_CONNECTION_ENABLED = "tsdb.ssl.connection.enabled";
+  public static final String TSDB_CLIENT_SSL_KEYSTORE = "tsdb.ssl.client.keystore";
+  public static final String TSDB_CLIENT_SSL_KEY_PASSWORD = "tsdb.ssl.client.key.password";
+  public static final String TSDB_CLIENT_SSL_KEYSTORE_PASSWORD = "tsdb.ssl.client.keystore.password";
+  public static final String TSDB_CLIENT_SSL_TRUST_KEYSTORE = "tsdb.ssl.client.trust.keystore";
+  public static final String TSDB_CLIENT_SSL_TRUST_KEYSTORE_PASSWORD = "tsdb.ssl.client.trust.keystore.password";
+
   private static TSDB tsdb = null;
   
   public static void main(String[] args) throws IOException {
@@ -201,7 +211,30 @@ final class TSDMain {
       // here to fail fast.
       final RpcManager manager = RpcManager.instance(tsdb);
 
-      server.setPipelineFactory(new PipelineFactory(tsdb, manager, connections_limit));
+      // If ssl disabled, return null.
+      // If sslEnabled, return a non-null sslContext if success. Throw exception if fail.
+      SSLContext sslContext = null;
+
+      if (config.getBoolean("tsd.ssl.enabled")) {
+        String keyStorePath = config.getString(TSDB_CLIENT_SSL_KEYSTORE);
+        String keyPassword = config.getString(TSDB_CLIENT_SSL_KEY_PASSWORD);
+        String keyStorePassword = config.getString(TSDB_CLIENT_SSL_KEYSTORE_PASSWORD);
+        String trustKeyStorePath = config.getString(TSDB_CLIENT_SSL_TRUST_KEYSTORE);
+        String trustKeyStorePassword = config.getString(TSDB_CLIENT_SSL_TRUST_KEYSTORE_PASSWORD);
+
+        SSLContext context = SslUtils.getSSLContext(
+            keyStorePath,
+            keyPassword,
+            keyStorePassword,
+            trustKeyStorePath,
+            trustKeyStorePassword
+        );
+        if (context == null) {
+          throw new RuntimeException("SSLEnabled but fail to get SSLContext.");
+        }
+      }
+
+      server.setPipelineFactory(new PipelineFactory(tsdb, manager, connections_limit, sslContext));
       if (config.hasProperty("tsd.network.backlog")) {
         server.setOption("backlog", config.getInt("tsd.network.backlog")); 
       }

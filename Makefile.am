@@ -197,6 +197,11 @@ tsdb_SRC := \
 	src/utils/JSONException.java	\
 	src/utils/Pair.java	\
 	src/utils/PluginLoader.java	\
+	src/utils/ssl/ByteGroup.java	\
+	src/utils/ssl/PKCS7Encoder.java	\
+	src/utils/ssl/AesException.java	\
+	src/utils/ssl/AesCrypt.java	\
+	src/utils/ssl/SslUtils.java	\
 	src/utils/Threads.java
 
 tsdb_DEPS = \
@@ -215,7 +220,10 @@ tsdb_DEPS = \
 	$(NETTY)	\
 	$(SLF4J_API)	\
 	$(SUASYNC)	\
-	$(APACHE_MATH)
+	$(APACHE_MATH)  \
+	$(APACHE_COMMONS_CODEC)  \
+	$(SSL)	\
+	$(SECURITY)
 
 if BIGTABLE
 tsdb_DEPS += \
@@ -805,6 +813,9 @@ pom.xml: pom.xml.in Makefile
 	    -e 's/@SUASYNC_VERSION@/$(SUASYNC_VERSION)/' \
 	    -e 's/@ZOOKEEPER_VERSION@/$(ZOOKEEPER_VERSION)/' \
 	    -e 's/@APACHE_MATH_VERSION@/$(APACHE_MATH_VERSION)/' \
+	    -e 's/@APACHE_COMMONS_CODEC_VERSION@/$(APACHE_COMMONS_CODEC_VERSION)/' \
+	    -e 's/@SSL_VERSION@/$(SSL_VERSION)/' \
+	    -e 's/@SECURITY_VERSION@/$(SECURITY_VERSION)/' \
 	    -e 's/@JEXL_VERSION@/$(JEXL_VERSION)/' \
 	    -e 's/@JGRAPHT_VERSION@/$(JGRAPHT_VERSION)/' \
 	    -e 's/@spec_title@/$(spec_title)/' \
