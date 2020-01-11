@@ -41,7 +41,9 @@ import net.opentsdb.utils.FileSystem;
 import net.opentsdb.utils.Pair;
 import net.opentsdb.utils.PluginLoader;
 import net.opentsdb.utils.Threads;
-import utils.ssl.SslUtils;
+import net.opentsdb.utils.ssl.AesCrypt;
+import net.opentsdb.utils.ssl.SslUtils;
+import net.opentsdb.utils.ssl.MysqlSslUtils;
 
 import javax.net.ssl.SSLContext;
 
@@ -210,6 +212,13 @@ final class TSDMain {
       // This manager is capable of lazy init, but we force an init
       // here to fail fast.
       final RpcManager manager = RpcManager.instance(tsdb);
+
+      // Initialize AesCrypt instance, to be used in mysqlSslInit and PipelineFactory
+      String aesKey = config.getString("secret.key");
+      AesCrypt.getInstance().init(aesKey);
+
+      // Initialize mysql ssl
+      MysqlSslUtils.mysqlSslInit(config);
 
       // If ssl disabled, return null.
       // If sslEnabled, return a non-null sslContext if success. Throw exception if fail.

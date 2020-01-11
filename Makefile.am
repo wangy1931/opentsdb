@@ -202,6 +202,7 @@ tsdb_SRC := \
 	src/utils/ssl/AesException.java	\
 	src/utils/ssl/AesCrypt.java	\
 	src/utils/ssl/SslUtils.java	\
+	src/utils/ssl/MysqlSslUtils.java	\
 	src/utils/Threads.java
 
 tsdb_DEPS = \
