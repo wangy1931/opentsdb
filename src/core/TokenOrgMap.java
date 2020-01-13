@@ -34,7 +34,7 @@ public class TokenOrgMap {
         this.connectionPoolDataSource = new MysqlConnectionPoolDataSource();
         this.connectionPoolDataSource.setUrl(dbUrl);
         this.connectionPoolDataSource.setUser(dbUser);
-        this.connectionPoolDataSource.setPassword(dbPassword);
+        this.connectionPoolDataSource.setPassword(net.opentsdb.utils.ssl.AesCrypt.getInstance().decrypt(dbPassword));
         LOG.info("initialized db connection {}@{}", dbUser, dbUrl);
         final Timer timer = new Timer("TimerThread-refresh-orgtoken");
         timer.schedule(new TimerTask() {
