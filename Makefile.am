@@ -197,7 +197,8 @@ tsdb_SRC := \
 	src/utils/JSONException.java	\
 	src/utils/Pair.java	\
 	src/utils/PluginLoader.java	\
-	src/utils/Threads.java
+	src/utils/Threads.java	\
+        src/utils/RollingFileAppender2.java
 
 tsdb_DEPS = \
 	$(COMMONS_LOGGING)	\
