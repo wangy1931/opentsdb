@@ -71,6 +71,8 @@ final class TSDMain {
 
   private static final short DEFAULT_FLUSH_INTERVAL = 1000;
 
+  public static final String TSDB_SSL_ENABLED = "tsd.ssl.enabled";
+
   public static final String TSDB_CLIENT_SSL_CONNECTION_ENABLED = "tsdb.ssl.connection.enabled";
   public static final String TSDB_CLIENT_SSL_KEYSTORE = "tsdb.ssl.client.keystore";
   public static final String TSDB_CLIENT_SSL_KEY_PASSWORD = "tsdb.ssl.client.key.password";
@@ -194,6 +196,14 @@ final class TSDMain {
     }
 
     try {
+      // Initialize AesCrypt instance, to be used in mysqlSslInit and PipelineFactory
+      String aesKey = config.getString("secret.key");
+      AesCrypt.getInstance().init(aesKey);
+
+      // Initialize mysql ssl
+      MysqlSslUtils.mysqlSslInit(config);
+
+      // new TSDB Must be after mysql ssl.
       tsdb = new TSDB(config);
       if (startup != null) {
         tsdb.setStartupPlugin(startup);
@@ -213,18 +223,11 @@ final class TSDMain {
       // here to fail fast.
       final RpcManager manager = RpcManager.instance(tsdb);
 
-      // Initialize AesCrypt instance, to be used in mysqlSslInit and PipelineFactory
-      String aesKey = config.getString("secret.key");
-      AesCrypt.getInstance().init(aesKey);
-
-      // Initialize mysql ssl
-      MysqlSslUtils.mysqlSslInit(config);
-
       // If ssl disabled, return null.
       // If sslEnabled, return a non-null sslContext if success. Throw exception if fail.
       SSLContext sslContext = null;
 
-      if (config.getBoolean("tsd.ssl.enabled")) {
+      if (config.hasProperty(TSDB_SSL_ENABLED) && config.getBoolean(TSDB_SSL_ENABLED)) {
         String keyStorePath = config.getString(TSDB_CLIENT_SSL_KEYSTORE);
         String keyPassword = config.getString(TSDB_CLIENT_SSL_KEY_PASSWORD);
         String keyStorePassword = config.getString(TSDB_CLIENT_SSL_KEYSTORE_PASSWORD);
