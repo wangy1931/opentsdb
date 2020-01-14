@@ -73,12 +73,12 @@ final class TSDMain {
 
   public static final String TSDB_SSL_ENABLED = "tsd.ssl.enabled";
 
-  public static final String TSDB_CLIENT_SSL_CONNECTION_ENABLED = "tsdb.ssl.connection.enabled";
-  public static final String TSDB_CLIENT_SSL_KEYSTORE = "tsdb.ssl.client.keystore";
-  public static final String TSDB_CLIENT_SSL_KEY_PASSWORD = "tsdb.ssl.client.key.password";
-  public static final String TSDB_CLIENT_SSL_KEYSTORE_PASSWORD = "tsdb.ssl.client.keystore.password";
-  public static final String TSDB_CLIENT_SSL_TRUST_KEYSTORE = "tsdb.ssl.client.trust.keystore";
-  public static final String TSDB_CLIENT_SSL_TRUST_KEYSTORE_PASSWORD = "tsdb.ssl.client.trust.keystore.password";
+  public static final String TSDB_SERVER_SSL_CONNECTION_ENABLED = "tsdb.ssl.connection.enabled";
+  public static final String TSDB_SERVER_SSL_KEYSTORE = "tsdb.ssl.server.keystore";
+  public static final String TSDB_SERVER_SSL_KEY_PASSWORD = "tsdb.ssl.server.key.password";
+  public static final String TSDB_SERVER_SSL_KEYSTORE_PASSWORD = "tsdb.ssl.server.keystore.password";
+  public static final String TSDB_SERVER_SSL_TRUST_KEYSTORE = "tsdb.ssl.server.trust.keystore";
+  public static final String TSDB_SERVER_SSL_TRUST_KEYSTORE_PASSWORD = "tsdb.ssl.server.trust.keystore.password";
 
   private static TSDB tsdb = null;
   
@@ -228,25 +228,27 @@ final class TSDMain {
       SSLContext sslContext = null;
 
       if (config.hasProperty(TSDB_SSL_ENABLED) && config.getBoolean(TSDB_SSL_ENABLED)) {
-        String keyStorePath = config.getString(TSDB_CLIENT_SSL_KEYSTORE);
-        String keyPassword = config.getString(TSDB_CLIENT_SSL_KEY_PASSWORD);
-        String keyStorePassword = config.getString(TSDB_CLIENT_SSL_KEYSTORE_PASSWORD);
-        String trustKeyStorePath = config.getString(TSDB_CLIENT_SSL_TRUST_KEYSTORE);
-        String trustKeyStorePassword = config.getString(TSDB_CLIENT_SSL_TRUST_KEYSTORE_PASSWORD);
+        String keyStorePath = config.getString(TSDB_SERVER_SSL_KEYSTORE);
+        String keyPassword = config.getString(TSDB_SERVER_SSL_KEY_PASSWORD);
+        String keyStorePassword = config.getString(TSDB_SERVER_SSL_KEYSTORE_PASSWORD);
+        String trustKeyStorePath = config.getString(TSDB_SERVER_SSL_TRUST_KEYSTORE);
+        String trustKeyStorePassword = config.getString(TSDB_SERVER_SSL_TRUST_KEYSTORE_PASSWORD);
 
-        SSLContext context = SslUtils.getSSLContext(
+        sslContext = SslUtils.getSSLContext(
             keyStorePath,
             keyPassword,
             keyStorePassword,
             trustKeyStorePath,
             trustKeyStorePassword
         );
-        if (context == null) {
+        if (sslContext == null) {
           throw new RuntimeException("SSLEnabled but fail to get SSLContext.");
         }
       }
 
+      // Initialize server with sslContext if ssl_enabled.
       server.setPipelineFactory(new PipelineFactory(tsdb, manager, connections_limit, sslContext));
+
       if (config.hasProperty("tsd.network.backlog")) {
         server.setOption("backlog", config.getInt("tsd.network.backlog")); 
       }
