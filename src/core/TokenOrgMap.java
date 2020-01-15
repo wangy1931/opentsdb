@@ -89,7 +89,7 @@ public class TokenOrgMap {
                 if (con != null) con.close();
                 if (pcon != null) pcon.close();
             } catch (SQLException e) {
-                e.printStackTrace();
+                LOG.error("SQLException in loading org token", e);
             }
         }
     }
