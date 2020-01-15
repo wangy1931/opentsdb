@@ -202,7 +202,9 @@ tsdb_SRC := \
 	src/utils/ssl/AesException.java	\
 	src/utils/ssl/AesCrypt.java	\
 	src/utils/ssl/SslUtils.java	\
-	src/utils/Threads.java
+	src/utils/ssl/MysqlSslUtils.java	\
+	src/utils/Threads.java	\
+	src/utils/RollingFileAppender2.java
 
 tsdb_DEPS = \
 	$(COMMONS_LOGGING)	\

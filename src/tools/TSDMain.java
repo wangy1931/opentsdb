@@ -41,7 +41,9 @@ import net.opentsdb.utils.FileSystem;
 import net.opentsdb.utils.Pair;
 import net.opentsdb.utils.PluginLoader;
 import net.opentsdb.utils.Threads;
-import utils.ssl.SslUtils;
+import net.opentsdb.utils.ssl.AesCrypt;
+import net.opentsdb.utils.ssl.SslUtils;
+import net.opentsdb.utils.ssl.MysqlSslUtils;
 
 import javax.net.ssl.SSLContext;
 
@@ -69,12 +71,14 @@ final class TSDMain {
 
   private static final short DEFAULT_FLUSH_INTERVAL = 1000;
 
-  public static final String TSDB_CLIENT_SSL_CONNECTION_ENABLED = "tsdb.ssl.connection.enabled";
-  public static final String TSDB_CLIENT_SSL_KEYSTORE = "tsdb.ssl.client.keystore";
-  public static final String TSDB_CLIENT_SSL_KEY_PASSWORD = "tsdb.ssl.client.key.password";
-  public static final String TSDB_CLIENT_SSL_KEYSTORE_PASSWORD = "tsdb.ssl.client.keystore.password";
-  public static final String TSDB_CLIENT_SSL_TRUST_KEYSTORE = "tsdb.ssl.client.trust.keystore";
-  public static final String TSDB_CLIENT_SSL_TRUST_KEYSTORE_PASSWORD = "tsdb.ssl.client.trust.keystore.password";
+  public static final String TSDB_SSL_ENABLED = "tsd.ssl.enabled";
+
+  public static final String TSDB_SERVER_SSL_CONNECTION_ENABLED = "tsdb.ssl.connection.enabled";
+  public static final String TSDB_SERVER_SSL_KEYSTORE = "tsdb.ssl.server.keystore";
+  public static final String TSDB_SERVER_SSL_KEY_PASSWORD = "tsdb.ssl.server.key.password";
+  public static final String TSDB_SERVER_SSL_KEYSTORE_PASSWORD = "tsdb.ssl.server.keystore.password";
+  public static final String TSDB_SERVER_SSL_TRUST_KEYSTORE = "tsdb.ssl.server.trust.keystore";
+  public static final String TSDB_SERVER_SSL_TRUST_KEYSTORE_PASSWORD = "tsdb.ssl.server.trust.keystore.password";
 
   private static TSDB tsdb = null;
   
@@ -192,6 +196,14 @@ final class TSDMain {
     }
 
     try {
+      // Initialize AesCrypt instance, to be used in mysqlSslInit and PipelineFactory
+      String aesKey = config.getString("secret.key");
+      AesCrypt.getInstance().init(aesKey);
+
+      // Initialize mysql ssl
+      MysqlSslUtils.mysqlSslInit(config);
+
+      // new TSDB Must be after mysql ssl.
       tsdb = new TSDB(config);
       if (startup != null) {
         tsdb.setStartupPlugin(startup);
@@ -215,26 +227,28 @@ final class TSDMain {
       // If sslEnabled, return a non-null sslContext if success. Throw exception if fail.
       SSLContext sslContext = null;
 
-      if (config.getBoolean("tsd.ssl.enabled")) {
-        String keyStorePath = config.getString(TSDB_CLIENT_SSL_KEYSTORE);
-        String keyPassword = config.getString(TSDB_CLIENT_SSL_KEY_PASSWORD);
-        String keyStorePassword = config.getString(TSDB_CLIENT_SSL_KEYSTORE_PASSWORD);
-        String trustKeyStorePath = config.getString(TSDB_CLIENT_SSL_TRUST_KEYSTORE);
-        String trustKeyStorePassword = config.getString(TSDB_CLIENT_SSL_TRUST_KEYSTORE_PASSWORD);
+      if (config.hasProperty(TSDB_SSL_ENABLED) && config.getBoolean(TSDB_SSL_ENABLED)) {
+        String keyStorePath = config.getString(TSDB_SERVER_SSL_KEYSTORE);
+        String keyPassword = config.getString(TSDB_SERVER_SSL_KEY_PASSWORD);
+        String keyStorePassword = config.getString(TSDB_SERVER_SSL_KEYSTORE_PASSWORD);
+        String trustKeyStorePath = config.getString(TSDB_SERVER_SSL_TRUST_KEYSTORE);
+        String trustKeyStorePassword = config.getString(TSDB_SERVER_SSL_TRUST_KEYSTORE_PASSWORD);
 
-        SSLContext context = SslUtils.getSSLContext(
+        sslContext = SslUtils.getSSLContext(
             keyStorePath,
             keyPassword,
             keyStorePassword,
             trustKeyStorePath,
             trustKeyStorePassword
         );
-        if (context == null) {
+        if (sslContext == null) {
           throw new RuntimeException("SSLEnabled but fail to get SSLContext.");
         }
       }
 
+      // Initialize server with sslContext if ssl_enabled.
       server.setPipelineFactory(new PipelineFactory(tsdb, manager, connections_limit, sslContext));
+
       if (config.hasProperty("tsd.network.backlog")) {
         server.setOption("backlog", config.getInt("tsd.network.backlog")); 
       }

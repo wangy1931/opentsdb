@@ -4,6 +4,8 @@ import com.google.common.base.Optional;
 import com.google.common.base.Strings;
 import com.mysql.jdbc.jdbc2.optional.MysqlConnectionPoolDataSource;
 import net.opentsdb.utils.Config;
+import net.opentsdb.utils.ssl.AesException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,17 +26,19 @@ public class TokenOrgMap {
     private final MysqlConnectionPoolDataSource connectionPoolDataSource;
     private final Map<String, Prefix> tokenToOrg = new ConcurrentHashMap<String, Prefix>();
 
-    public TokenOrgMap(Config config) throws SQLException{
+    public TokenOrgMap(Config config) throws SQLException {
         final String dbUrl = config.getString(Config.PROP_MYSQL_URL);
         final String dbUser = config.getString(Config.PROP_MYSQL_USER);
         String dbPassword = config.getString(Config.PROP_MYSQL_PASSWORD);
-        Decoder decoder = Base64.getDecoder();
-        byte[] decodedPassword = decoder.decode(dbPassword); 
-        dbPassword = new String(decodedPassword);
+
         this.connectionPoolDataSource = new MysqlConnectionPoolDataSource();
         this.connectionPoolDataSource.setUrl(dbUrl);
         this.connectionPoolDataSource.setUser(dbUser);
-        this.connectionPoolDataSource.setPassword(dbPassword);
+        try {
+            this.connectionPoolDataSource.setPassword(net.opentsdb.utils.ssl.AesCrypt.getInstance().decrypt(dbPassword));
+        } catch (AesException aes) {
+            throw new SQLException(aes.getMessage());
+        }
         LOG.info("initialized db connection {}@{}", dbUser, dbUrl);
         final Timer timer = new Timer("TimerThread-refresh-orgtoken");
         timer.schedule(new TimerTask() {
@@ -85,7 +89,7 @@ public class TokenOrgMap {
                 if (con != null) con.close();
                 if (pcon != null) pcon.close();
             } catch (SQLException e) {
-                e.printStackTrace();
+                LOG.error("SQLException in loading org token", e);
             }
         }
     }
